@@ -172,5 +172,78 @@ d.append(h,p);$("scenes").append(d);
 });
 };
 </script>
+
+<section class="panel">
+  <h2>🎨 Generate an Image</h2>
+  <p class="muted">Turn your imagination into artwork.</p>
+  <label for="imagePrompt">Describe your image</label>
+  <textarea id="imagePrompt" maxlength="1500"
+    placeholder="Example: A mother bear and two cubs in a misty forest at sunrise..."></textarea>
+  <div class="actions">
+    <button class="primary" id="generateImage">Generate Image</button>
+  </div>
+  <p id="imageStatus" class="muted"></p>
+  <img id="generatedImage" alt="Your generated artwork"
+    style="display:none;width:100%;border-radius:12px;margin-top:12px">
+  <div class="actions">
+    <button id="saveImage" style="display:none">Save Image</button>
+  </div>
+</section>
+
+<script>
+const workerURL =
+  "https://proud-thunder-b959.stephensears1999.workers.dev/";
+
+document.getElementById("generateImage").onclick = async () => {
+  const prompt = document.getElementById("imagePrompt").value.trim();
+  const status = document.getElementById("imageStatus");
+  const image = document.getElementById("generatedImage");
+  const button = document.getElementById("generateImage");
+  const save = document.getElementById("saveImage");
+
+  if (!prompt) {
+    status.textContent = "Please describe the image first.";
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "Creating your image. Please wait...";
+  image.style.display = "none";
+  save.style.display = "none";
+
+  try {
+    const response = await fetch(workerURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.dataURI) {
+      throw new Error(result.error || "Image generation failed.");
+    }
+
+    image.src = result.dataURI;
+    image.style.display = "block";
+    save.style.display = "block";
+    status.textContent = "Your image is ready!";
+  } catch (error) {
+    status.textContent = error.message ||
+      "Could not connect. Please try again.";
+  } finally {
+    button.disabled = false;
+  }
+};
+
+document.getElementById("saveImage").onclick = () => {
+  const image = document.getElementById("generatedImage");
+  const link = document.createElement("a");
+  link.href = image.src;
+  link.download = "my-creative-artwork.jpg";
+  link.click();
+};
+</script>
+
 </body>
 </html>
