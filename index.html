@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11111b">
+<title>My Creative AI Studio</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#11111b;color:#f5f3ff;
+font-family:system-ui,sans-serif}
+header{padding:25px 18px;background:#282044}
+h1{font-size:26px;margin:8px 0}
+header p,.muted{color:#c1bbd7;font-size:14px}
+main{max-width:720px;margin:auto;padding:16px}
+nav{display:flex;gap:8px;overflow:auto;margin-bottom:16px}
+button{border:1px solid #55496f;border-radius:11px;
+padding:12px;background:#302841;color:white;font-size:14px}
+button.active,.primary{background:#b9a0ff;color:#191125;
+font-weight:bold}
+.panel{background:#1e1c2b;border:1px solid #393348;
+border-radius:16px;padding:16px;margin-bottom:16px}
+h2{font-size:19px;margin-top:0}
+label{display:block;margin:14px 0 7px}
+textarea,select,input{width:100%;padding:12px;
+border:1px solid #504761;border-radius:10px;
+background:#12111c;color:white;font:inherit}
+textarea{min-height:105px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.actions button{flex:1}
+#output{white-space:pre-wrap;overflow-wrap:anywhere;
+line-height:1.5;background:#12111c;padding:12px;
+border-radius:10px;min-height:50px}
+#preview{display:none;width:100%;max-height:350px;
+object-fit:contain;margin-top:12px}
+.scene{border-top:1px solid #504761;padding:12px 0}
+</style>
+</head>
+<body>
+<header>
+<div>✦ 🎨 🎬</div>
+<h1>My Creative AI Studio</h1>
+<p>Your imagination, your creative universe.</p>
+</header>
+<main>
+<nav>
+<button class="active" data-mode="image">Image ideas</button>
+<button data-mode="animate">Animation</button>
+<button data-mode="movie">Movie maker</button>
+</nav>
+
+<section class="panel">
+<h2 id="heading">Create an image prompt</h2>
+<p class="muted" id="hint">Describe what you want to create.</p>
+<label for="idea">Your idea</label>
+<textarea id="idea" placeholder="Describe your scene, character, or artwork..."></textarea>
+<label for="style">Visual style</label>
+<select id="style">
+<option>Cinematic 3D</option>
+<option>Photorealistic</option>
+<option>Fantasy art</option>
+<option>Anime</option>
+<option>Comic book</option>
+<option>Animated movie</option>
+</select>
+<label for="mood">Mood</label>
+<select id="mood">
+<option>Magical and emotional</option>
+<option>Epic and adventurous</option>
+<option>Warm and cheerful</option>
+<option>Dark and mysterious</option>
+<option>Dramatic and realistic</option>
+</select>
+<div class="actions">
+<button class="primary" id="build">Build my prompt</button>
+<button id="example">Try example</button>
+</div>
+</section>
+
+<section class="panel">
+<h2>Your prompt</h2>
+<div id="output">Your generated prompt will appear here.</div>
+<div class="actions">
+<button id="copy">Copy prompt</button>
+<button id="download">Save prompt</button>
+</div>
+</section>
+
+<section class="panel">
+<h2>Preview your image</h2>
+<p class="muted">Choose an image stored on your phone.</p>
+<input id="file" type="file" accept="image/*">
+<img id="preview" alt="Selected artwork preview">
+</section>
+
+<section class="panel">
+<h2>Movie storyboard</h2>
+<label for="story">What is your story about?</label>
+<textarea id="story" placeholder="Describe your movie idea..."></textarea>
+<div class="actions">
+<button class="primary" id="makeStory">Plan three scenes</button>
+</div>
+<div id="scenes"></div>
+</section>
+<p class="muted">Prototype 0.1 · Generation engines will be connected later.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let mode="image",last="";
+const headings={
+image:"Create an image prompt",
+animate:"Prepare an animation prompt",
+movie:"Design a movie scene"
+};
+document.querySelectorAll("[data-mode]").forEach(b=>{
+b.onclick=()=>{
+mode=b.dataset.mode;
+document.querySelectorAll("[data-mode]").forEach(x=>
+x.classList.toggle("active",x===b));
+$("heading").textContent=headings[mode];
+};
+});
+function build(){
+const idea=$("idea").value.trim();
+if(!idea){alert("Enter an idea first.");return;}
+last={
+image:`Create an original image of ${idea}. Visual style: ${$("style").value}. Mood: ${$("mood").value}. Use thoughtful composition, detailed surroundings, coherent lighting, depth, and polished visual quality.`,
+animate:`Animate this scene: ${idea}. Visual style: ${$("style").value}. Mood: ${$("mood").value}. Use natural motion, subtle environmental movement, smooth camera motion, consistent characters, and stable details between frames.`,
+movie:`Create a cinematic movie scene: ${idea}. Visual style: ${$("style").value}. Mood: ${$("mood").value}. Establish the setting, show a clear action, use expressive characters and cinematic lighting, and maintain continuity with other scenes.`
+}[mode];
+$("output").textContent=last;
+}
+$("build").onclick=build;
+$("example").onclick=()=>{
+$("idea").value="A mother bear walking through a misty forest with her two cubs at sunrise";
+build();
+};
+$("copy").onclick=async()=>{
+if(!last){alert("Build a prompt first.");return;}
+try{await navigator.clipboard.writeText(last);alert("Copied!");}
+catch{alert("Select the prompt text and copy it manually.");}
+};
+$("download").onclick=()=>{
+if(!last){alert("Build a prompt first.");return;}
+const a=document.createElement("a");
+const u=URL.createObjectURL(new Blob([last],{type:"text/plain"}));
+a.href=u;a.download="creative-prompt.txt";a.click();
+URL.revokeObjectURL(u);
+};
+$("file").onchange=e=>{
+const f=e.target.files[0];
+if(!f||!f.type.startsWith("image/"))return;
+const u=URL.createObjectURL(f);
+$("preview").src=u;$("preview").style.display="block";
+};
+$("makeStory").onclick=()=>{
+const story=$("story").value.trim();
+if(!story){alert("Enter a story idea first.");return;}
+const scenes=[
+["Scene 1 — The opening","Introduce the characters and setting."],
+["Scene 2 — The action","Show a challenge, discovery, or important event."],
+["Scene 3 — The turning point","Create an emotional moment or small resolution."]
+];
+$("scenes").replaceChildren();
+scenes.forEach(([title,desc],i)=>{
+const d=document.createElement("div");d.className="scene";
+const h=document.createElement("strong");h.textContent=title;
+const p=document.createElement("p");
+p.textContent=desc+" Story: "+story;
+d.append(h,p);$("scenes").append(d);
+});
+};
+</script>
+</body>
+</html>
