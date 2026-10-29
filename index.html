@@ -215,8 +215,17 @@ document.getElementById("generateImage").onclick = async () => {
     const response = await fetch(workerURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt })
-    });
+      
+body: JSON.stringify({
+  prompt,
+  image: document.getElementById("myPictureUpload").files[0]
+    ? await fileToDataURL(
+        document.getElementById("myPictureUpload").files[0]
+      )
+    : null
+})
+});
+
 
     const result = await response.json();
 
@@ -243,6 +252,16 @@ document.getElementById("saveImage").onclick = () => {
   link.download = "my-creative-artwork.jpg";
   link.click();
 };
+
+async function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not read the picture."));
+    reader.readAsDataURL(file);
+  });
+}
+
 </script>
 
 <section class="panel">
